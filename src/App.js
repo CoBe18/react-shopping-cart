@@ -2,55 +2,49 @@ import React, { useState } from 'react';
 import { Route } from 'react-router-dom';
 import data from './data';
 
+import { useLocalStorage } from './hooks/useLocalStorage';
+
+import { ProductContext } from './contexts/ProductContext';
+import { CartContext } from './contexts/CartContext';
+
 // Components
 import Navigation from './components/Navigation';
 import Products from './components/Products';
 import ShoppingCart from './components/ShoppingCart';
 
-// Context
-import { ProductContext } from './contexts/ProductContext';
-import { CartContext }  from './contexts/CartContext';
-
 function App() {
 	const [products] = useState(data);
-	const [cart, setCart] = useState([]);
+	const [cart, setCart] = useLocalStorage('localCart', []);
+	console.log(cart);
 
 	const addItem = item => {
-		// add the given item to the cart
 		setCart([...cart, item]);
 	};
 
 	const removeItem = item => {
-		setCart(cart.filter((cartItem, i) => i !==item.i));
+		setCart(cart.filter(i => i.id !== item.id));
 	};
 
 	return (
-		<ProductContext.Provider value={{ products, addItem }}>
-			<CartContext.Provider value={{ cart, removeItem }}>
-				<div className="App">
-					<Navigation cart={cart} />
+		<div className="App">
+			<CartContext.Provider value={{cart, removeItem}}>				
+				<Navigation />			
 
-					{/* Routes */}
+				{/* Routes */}
+				<ProductContext.Provider value={{products, addItem}}>
 					<Route
 						exact
 						path="/"
 						component={Products}
-						// render={() => (
-						// 	<Products
-						// 		products={products}
-						// 		addItem={addItem}
-						// 	/>
-						// )}
 					/>
-
+		
 					<Route
 						path="/cart"
 						component={ShoppingCart}
-						// render={() => <ShoppingCart cart={cart} />}
 					/>
-				</div>
+				</ProductContext.Provider>
 			</CartContext.Provider>
-		</ProductContext.Provider>
+		</div>
 	);
 }
 
